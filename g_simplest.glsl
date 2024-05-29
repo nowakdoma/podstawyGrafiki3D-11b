@@ -1,33 +1,31 @@
 #version 330
 
 layout(triangles) in;
-layout(line_strip, max_vertices = 6) out;
+layout(triangle_strip, max_vertices = 3) out;
+
+uniform mat4 P;
+uniform mat4 V;
+uniform mat4 M;
+uniform float amount;
 
 in vec4 gColor[];
+in vec4 gVertex[];
+
 out vec4 iColor;
 
-void main() {
-    // Pêtla iteruj¹ca po trójk¹cie wejœciowym
-    for (int i = 0; i < 3; ++i) {
-        // Przekazywanie pozycji i koloru punktu A
-        gl_Position = gl_in[i].gl_Position;
-        iColor = gColor[i];
-        EmitVertex();
-
-        // Przekazywanie pozycji i koloru punktu D (œrednia z A, B i C)
-        int nextIndex1 = (i + 1) % 3;
-        int nextIndex2 = (i + 2) % 3;
-        gl_Position = (gl_in[i].gl_Position + gl_in[nextIndex1].gl_Position + gl_in[nextIndex2].gl_Position) / 3.0;
-        iColor = (gColor[i] + gColor[nextIndex1] + gColor[nextIndex2]) / 3.0;
-        EmitVertex();
-
-        // Nastêpny wierzcho³ek tworz¹cy odcinek (punkt B lub C)
-        int nextIndex3 = (i + 2) % 3;
-        gl_Position = gl_in[nextIndex3].gl_Position;
-        iColor = gColor[nextIndex3];
-        EmitVertex();
-
-        // Koniec odcinka
-        EndPrimitive();
-    }
+void main(void) {
+   	int i;
+ 
+	vec3 a = (gVertex[1] - gVertex[0]).xyz;
+	vec3 b = (gVertex[2] - gVertex[0]).xyz;
+ 
+	vec4 n = vec4(normalize(cross(b,a)),0);
+ 
+	for(i=0; i<gl_in.length();i++) {
+		gl_Position=P*V*M*(gVertex[i]+amount*n);
+		iColor = gColor[i];
+		EmitVertex();
+	}
+ 
+	EndPrimitive();
 }
